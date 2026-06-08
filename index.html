@@ -2,97 +2,216 @@
 <html>
 <head>
   <title>Firebase Photo Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body { font-family: Arial; text-align: center; background:#111; color:white; }
-    video, canvas, img { width: 300px; border-radius: 12px; margin: 10px; }
-    button, input { padding: 12px; margin: 6px; font-size: 16px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    input, button {
+      width: 90%;
+      max-width: 320px;
+      padding: 12px;
+      margin: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      background: #00c853;
+      color: white;
+      cursor: pointer;
+    }
+
+    video, canvas, img {
+      width: 90%;
+      max-width: 360px;
+      border-radius: 12px;
+      margin-top: 10px;
+      background: #000;
+    }
+
+    #status {
+      margin-top: 15px;
+      color: #00e676;
+    }
   </style>
 </head>
+
 <body>
 
-<h2>Take Photo & Send to Firebase</h2>
+  <h2>Take Photo & Send</h2>
 
-<input id="nameInput" placeholder="Name"><br>
-<input id="messageInput" placeholder="Message"><br>
+  <input id="nameInput" type="text" placeholder="Name">
+  <input id="messageInput" type="text" placeholder="Message">
 
-<video id="video" autoplay playsinline></video><br>
+  <br>
 
-<button onclick="takePhoto()">Take Photo</button>
-<button onclick="sendToFirebase()">Send</button>
+  <video id="video" autoplay playsinline muted></video>
 
-<canvas id="canvas" width="300" height="300" style="display:none;"></canvas>
-<br>
-<img id="preview">
+  <br>
+
+  <button onclick="takePhoto()">Take Photo</button>
+  <button onclick="sendToFirebase()">Send</button>
+
+  <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+  <br>
+
+  <img id="preview">
+
+  <p id="status"></p>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBvVAMagfB-NeQx7t9jWMbYVrXyeVwc0kg",
+  authDomain: "nibla-a5550.firebaseapp.com",
+  databaseURL: "https://nibla-a5550-default-rtdb.firebaseio.com",
+  projectId: "nibla-a5550",
+  storageBucket: "nibla-a5550.firebasestorage.app",
+  messagingSenderId: "595860598804",
+  appId: "1:595860598804:web:37b9d413664153c9ca7701",
+  measurementId: "G-8S8CK0ES6T"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const preview = document.getElementById("preview");
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const preview = document.getElementById("preview");
+  const statusText = document.getElementById("status");
 
-let photoBlob = null;
+  let photoBlob = null;
 
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    alert("Camera error: " + err.message);
-  });
+  async function startCamera() {
+    try {
+      statusText.innerText = "Opening camera...";
 
-window.takePhoto = function () {
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user",
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      });
 
-  canvas.toBlob(blob => {
-    photoBlob = blob;
-    preview.src = URL.createObjectURL(blob);
-  }, "image/jpeg", 0.9);
-};
+      video.srcObject = stream;
+      await video.play();
 
-window.sendToFirebase = async function () {
-  const name = document.getElementById("nameInput").value;
-  const message = document.getElementById("messageInput").value;
+      statusText.innerText = "Camera ready";
 
-  if (!name || !message || !photoBlob) {
-    alert("Enter name, message, and take photo first");
-    return;
+    } catch (err) {
+      console.error(err);
+
+      if (err.name === "NotReadableError") {
+        statusText.innerText = "Camera is busy. Close Unity, Zoom, OBS, or Camera app.";
+        alert("Camera is busy. Close Unity, Zoom, OBS, or Camera app, then refresh.");
+      }
+      else if (err.name === "NotAllowedError") {
+        statusText.innerText = "Camera permission denied.";
+        alert("Allow camera permission from Chrome.");
+      }
+      else if (err.name === "NotFoundError") {
+        statusText.innerText = "No camera found.";
+        alert("No camera found.");
+      }
+      else {
+        statusText.innerText = "Camera error: " + err.message;
+        alert("Camera error: " + err.message);
+      }
+    }
   }
 
-  const fileName = "users/" + Date.now() + ".jpg";
-  const imageStorageRef = storageRef(storage, fileName);
+  window.takePhoto = function () {
+    if (!video.srcObject) {
+      alert("Camera not ready");
+      return;
+    }
 
-  await uploadBytes(imageStorageRef, photoBlob);
-  const imageUrl = await getDownloadURL(imageStorageRef);
+    const ctx = canvas.getContext("2d");
 
-  const newUserRef = push(ref(db, "users"));
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
 
-  await set(newUserRef, {
-    name: name,
-    message: message,
-    imageUrl: imageUrl,
-    createdAt: Date.now()
-  });
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  alert("Sent to Firebase successfully!");
-};
+    canvas.toBlob(blob => {
+      photoBlob = blob;
+      preview.src = URL.createObjectURL(blob);
+      statusText.innerText = "Photo captured";
+    }, "image/jpeg", 0.9);
+  };
+
+  window.sendToFirebase = async function () {
+    try {
+      const name = document.getElementById("nameInput").value.trim();
+      const message = document.getElementById("messageInput").value.trim();
+
+      if (!name) {
+        alert("Enter name");
+        return;
+      }
+
+      if (!message) {
+        alert("Enter message");
+        return;
+      }
+
+      if (!photoBlob) {
+        alert("Take photo first");
+        return;
+      }
+
+      statusText.innerText = "Uploading image...";
+
+      const fileName = "userImages/" + Date.now() + ".jpg";
+      const imgRef = storageRef(storage, fileName);
+
+      await uploadBytes(imgRef, photoBlob);
+
+      const imageUrl = await getDownloadURL(imgRef);
+
+      statusText.innerText = "Sending data...";
+
+      const newUserRef = push(ref(db, "users"));
+
+      await set(newUserRef, {
+        name: name,
+        message: message,
+        imageUrl: imageUrl,
+        createdAt: Date.now()
+      });
+
+      statusText.innerText = "Sent successfully";
+
+      alert("Sent successfully!");
+
+      document.getElementById("nameInput").value = "";
+      document.getElementById("messageInput").value = "";
+      preview.src = "";
+      photoBlob = null;
+
+    } catch (err) {
+      console.error(err);
+      statusText.innerText = "Send error: " + err.message;
+      alert("Send error: " + err.message);
+    }
+  };
+
+  startCamera();
 </script>
 
 </body>
