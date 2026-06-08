@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Photo Test</title>
+  <style>
+    body { font-family: Arial; text-align: center; background:#111; color:white; }
+    video, canvas, img { width: 300px; border-radius: 12px; margin: 10px; }
+    button, input { padding: 12px; margin: 6px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h2>Take Photo & Send to Firebase</h2>
+
+<input id="nameInput" placeholder="Name"><br>
+<input id="messageInput" placeholder="Message"><br>
+
+<video id="video" autoplay playsinline></video><br>
+
+<button onclick="takePhoto()">Take Photo</button>
+<button onclick="sendToFirebase()">Send</button>
+
+<canvas id="canvas" width="300" height="300" style="display:none;"></canvas>
+<br>
+<img id="preview">
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const storage = getStorage(app);
+
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const preview = document.getElementById("preview");
+
+let photoBlob = null;
+
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    alert("Camera error: " + err.message);
+  });
+
+window.takePhoto = function () {
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob(blob => {
+    photoBlob = blob;
+    preview.src = URL.createObjectURL(blob);
+  }, "image/jpeg", 0.9);
+};
+
+window.sendToFirebase = async function () {
+  const name = document.getElementById("nameInput").value;
+  const message = document.getElementById("messageInput").value;
+
+  if (!name || !message || !photoBlob) {
+    alert("Enter name, message, and take photo first");
+    return;
+  }
+
+  const fileName = "users/" + Date.now() + ".jpg";
+  const imageStorageRef = storageRef(storage, fileName);
+
+  await uploadBytes(imageStorageRef, photoBlob);
+  const imageUrl = await getDownloadURL(imageStorageRef);
+
+  const newUserRef = push(ref(db, "users"));
+
+  await set(newUserRef, {
+    name: name,
+    message: message,
+    imageUrl: imageUrl,
+    createdAt: Date.now()
+  });
+
+  alert("Sent to Firebase successfully!");
+};
+</script>
+
+</body>
+</html>
