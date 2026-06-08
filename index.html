@@ -1,250 +1,235 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>NIBLA Photo Booth</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <title>NIBLA Photo Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <style>
+  <style>
     * {
-  box-sizing: border-box;
-  user-select: none;
-  -webkit-user-select: none;
-}
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-html, body {
-  margin: 0;
-  min-height: 100%;
-  font-family: Arial, sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(255,0,77,0.35), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(123,31,162,0.45), transparent 40%),
-    linear-gradient(135deg, #1A0B2E, #4B1D7A, #8C145E, #E0004D);
-  color: white;
-}
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255,0,77,0.35), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(123,31,162,0.45), transparent 40%),
+        linear-gradient(135deg, #1A0B2E, #4B1D7A, #8C145E, #E0004D);
+      color: white;
+    }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow-y: auto;
-  padding: 14px;
-}
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+      padding: 18px;
+    }
 
-.card {
-  width: 94%;
-  max-width: 420px;
-  min-height: auto;
-  padding: 16px;
-  border-radius: 26px;
-  background: rgba(255,255,255,0.09);
-  backdrop-filter: blur(22px);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow:
-    0 0 45px rgba(224,0,77,0.35),
-    0 0 90px rgba(123,31,162,0.25);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
+    .card {
+      width: 94%;
+      max-width: 420px;
+      padding: 18px;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.09);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 0 45px rgba(224,0,77,0.35),
+        0 0 90px rgba(123,31,162,0.25);
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
 
-.logo {
-  width: 58px;
-  margin-bottom: 4px;
-  animation: pulse 2.5s infinite;
-  pointer-events: none;
-}
+    .logo {
+      width: 70px;
+      margin-bottom: 6px;
+      animation: pulse 2.5s infinite;
+      pointer-events: none;
+    }
 
-h2 {
-  margin: 4px 0;
-  font-size: 21px;
-}
+    h2 {
+      margin: 6px 0;
+      font-size: 22px;
+    }
 
-.subtitle {
-  margin-bottom: 10px;
-  opacity: 0.8;
-  font-size: 12px;
-}
+    .subtitle {
+      margin-bottom: 14px;
+      opacity: 0.85;
+      font-size: 13px;
+    }
 
-.sendZone {
-  width: 100%;
-  height: 58px;
-  border-radius: 18px;
-  margin-bottom: 10px;
-  border: 2px dashed rgba(255,255,255,0.45);
-  background: rgba(255,255,255,0.08);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  color: rgba(255,255,255,0.85);
-  font-size: 13px;
-}
+    .sendZone {
+      width: 100%;
+      height: 65px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      border: 2px dashed rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+      transition: 0.2s;
+    }
 
-.sendZone.active {
-  background: rgba(255,0,77,0.35);
-  border-color: #fff;
-  box-shadow: 0 0 35px rgba(255,0,77,0.7);
-  transform: scale(1.03);
-}
+    .sendZone.active {
+      background: rgba(255,0,77,0.35);
+      border-color: #fff;
+      box-shadow: 0 0 35px rgba(255,0,77,0.7);
+      transform: scale(1.03);
+    }
 
-.previewBox {
-  width: 155px;
-  height: 155px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  padding: 4px;
-  background:
-    linear-gradient(#111, #111) padding-box,
-    linear-gradient(135deg, #7B1FA2, #C2185B, #FF004D) border-box;
-  border: 4px solid transparent;
-  overflow: hidden;
-  position: relative;
-}
+    .previewBox {
+      width: 190px;
+      height: 190px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      padding: 5px;
+      background:
+        linear-gradient(#111, #111) padding-box,
+        linear-gradient(135deg, #7B1FA2, #C2185B, #FF004D) border-box;
+      border: 5px solid transparent;
+      overflow: hidden;
+      position: relative;
+    }
 
-#preview {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #111;
-  cursor: grab;
- 
-}
+    #preview {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #111;
+      cursor: grab;
+      touch-action: none;
+      transform: translate(0,0) scale(1);
+    }
 
-#preview.dragging {
-  cursor: grabbing;
-  transition: none;
-  z-index: 20;
-  position: relative;
-  filter: drop-shadow(0 20px 25px rgba(0,0,0,0.45));
-}
+    #preview.dragging {
+      cursor: grabbing;
+      transition: none;
+      z-index: 20;
+      position: relative;
+      filter: drop-shadow(0 20px 25px rgba(0,0,0,0.45));
+    }
 
-.hint {
-  font-size: 12px;
-  opacity: 0.75;
-  margin: 0 0 8px;
-}
+    .hint {
+      font-size: 12px;
+      opacity: 0.75;
+      margin: 0 0 12px;
+    }
 
-input[type="text"] {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  background: rgba(255,255,255,0.92);
-  color: #222;
-  touch-action: auto;
-  user-select: text;
-  -webkit-user-select: text;
-}
+    input[type="file"] {
+      display: none;
+    }
 
-input[type="file"] {
-  display: none;
-}
+    .photoBtn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 16px;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(90deg, #7B1FA2, #C2185B, #FF004D);
+      box-shadow: 0 8px 25px rgba(255,0,77,0.35);
+      touch-action: auto;
+    }
 
-.photoBtn {
-  width: 100%;
-  padding: 13px;
-  margin-top: 6px;
-  border: none;
-  border-radius: 14px;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  background: linear-gradient(90deg, #7B1FA2, #C2185B, #FF004D);
-  box-shadow: 0 8px 25px rgba(255,0,77,0.35);
-  touch-action: auto;
-}
+    #status {
+      min-height: 22px;
+      margin-top: 14px;
+      font-size: 14px;
+      color: #fff;
+    }
 
-#status {
-  min-height: 20px;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #fff;
-}
+    .success {
+      color: #00ff99 !important;
+      font-weight: bold;
+    }
 
-.success {
-  color: #00ff99 !important;
-  font-weight: bold;
-}
+    .particle {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      animation: float 8s infinite ease-in-out;
+    }
 
-.particle {
-  position: fixed;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  animation: float 8s infinite ease-in-out;
-}
+    .p1 { top: 12%; left: 10%; animation-delay: 0s; }
+    .p2 { top: 70%; left: 15%; animation-delay: 1s; }
+    .p3 { top: 20%; right: 12%; animation-delay: 2s; }
+    .p4 { bottom: 10%; right: 18%; animation-delay: 3s; }
 
-.p1 { top: 12%; left: 10%; animation-delay: 0s; }
-.p2 { top: 70%; left: 15%; animation-delay: 1s; }
-.p3 { top: 20%; right: 12%; animation-delay: 2s; }
-.p4 { bottom: 10%; right: 18%; animation-delay: 3s; }
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(255,0,77,0.4));
+      }
+      50% {
+        transform: scale(1.06);
+        filter: drop-shadow(0 0 25px rgba(255,0,77,0.8));
+      }
+    }
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 10px rgba(255,0,77,0.4));
-  }
-  50% {
-    transform: scale(1.06);
-    filter: drop-shadow(0 0 25px rgba(255,0,77,0.8));
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translateY(-30px) scale(1.3);
-    opacity: 0.9;
-  }
-}
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translateY(-30px) scale(1.3);
+        opacity: 0.9;
+      }
+    }
   </style>
-    </head>
+</head>
 
-    <body>
+<body>
 
-        <div class="particle p1"></div>
-        <div class="particle p2"></div>
-        <div class="particle p3"></div>
-        <div class="particle p4"></div>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+  <div class="particle p4"></div>
 
-        <div class="card">
+  <div class="card">
 
-            <img class="logo" src="logo.png">
+    <img class="logo" src="logo.png">
 
-            <div id="sendZone" class="sendZone">
-                DROP PHOTO HERE TO SEND
-            </div>
+    <h2>NIBLA Photo Upload</h2>
+    <div class="subtitle">Take your photo, then drag it up to send</div>
 
-            <div class="previewBox">
-                <img id="preview" src>
-            </div>
+    <div id="sendZone" class="sendZone">
+      DROP PHOTO HERE TO SEND
+    </div>
 
-            <div class="hint">Drag your photo upward after selecting it</div>
+    <div class="previewBox">
+      <img id="preview" src="">
+    </div>
 
-            <input id="nameInput" type="text" placeholder="Your Name">
-            <input id="messageInput" type="text" placeholder="Your Message">
+    <div class="hint">Drag photo upward into the send zone</div>
 
-            <input type="file" id="fileInput" accept="image/*" capture="camera">
+    <input type="file" id="fileInput" accept="image/*" capture="camera">
 
-            <button class="photoBtn"
-                onclick="document.getElementById('fileInput').click()">
-                📷 Take Photo
-            </button>
+    <button class="photoBtn" onclick="document.getElementById('fileInput').click()">
+      📷 Take Photo
+    </button>
 
-            <p id="status"></p>
+    <p id="status"></p>
 
-        </div>
+  </div>
 
-        <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
@@ -365,21 +350,6 @@ input[type="file"] {
     try {
       if (isSending) return;
 
-      const name = document.getElementById("nameInput").value.trim();
-      const message = document.getElementById("messageInput").value.trim();
-
-      if (!name) {
-        alert("Enter your name");
-        resetImagePosition();
-        return;
-      }
-
-      if (!message) {
-        alert("Enter your message");
-        resetImagePosition();
-        return;
-      }
-
       if (!photoBlob) {
         alert("Take photo first");
         resetImagePosition();
@@ -390,9 +360,12 @@ input[type="file"] {
       statusText.className = "";
       statusText.innerText = "Uploading image...";
 
-      preview.style.transform = "translate(0,-120px) scale(0.85)";
+      preview.style.transform = "translate(0,-110px) scale(0.82)";
 
-      const safeName = photoBlob.name ? photoBlob.name.replace(/[^a-zA-Z0-9._-]/g, "_") : "photo.jpg";
+      const safeName = photoBlob.name
+        ? photoBlob.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+        : "photo.jpg";
+
       const fileName = "userImages/" + Date.now() + "_" + safeName;
       const imgRef = storageRef(storage, fileName);
 
@@ -400,23 +373,18 @@ input[type="file"] {
 
       const imageUrl = await getDownloadURL(imgRef);
 
-      statusText.innerText = "Sending data...";
+      statusText.innerText = "Sending image URL...";
 
       const newUserRef = push(ref(db, "users"));
 
       await set(newUserRef, {
-        name: name,
-        message: message,
-        imageUrl: imageUrl,
-        createdAt: Date.now()
+        imageUrl: imageUrl
       });
 
       statusText.className = "success";
-      statusText.innerText = "✅ Thank you! Sent successfully";
+      statusText.innerText = "✅ Image sent successfully";
 
       setTimeout(() => {
-        document.getElementById("nameInput").value = "";
-        document.getElementById("messageInput").value = "";
         fileInput.value = "";
         preview.src = "";
         photoBlob = null;
@@ -424,7 +392,7 @@ input[type="file"] {
         statusText.className = "";
         statusText.innerText = "";
         resetImagePosition();
-      }, 5000);
+      }, 3000);
 
     } catch (err) {
       console.error(err);
@@ -437,5 +405,5 @@ input[type="file"] {
   }
 </script>
 
-    </body>
+</body>
 </html>
