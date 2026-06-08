@@ -34,12 +34,8 @@
       background: rgba(255,255,255,0.09);
       backdrop-filter: blur(22px);
       border: 1px solid rgba(255,255,255,0.18);
-      box-shadow:
-        0 0 45px rgba(224,0,77,0.35),
-        0 0 90px rgba(123,31,162,0.25);
+      box-shadow: 0 0 45px rgba(224,0,77,0.35);
       text-align: center;
-      position: relative;
-      z-index: 2;
     }
 
     .logo {
@@ -60,8 +56,8 @@
     }
 
     .previewBox {
-      width: 190px;
-      height: 190px;
+      width: 180px;
+      height: 180px;
       margin: 0 auto 16px;
       border-radius: 50%;
       padding: 5px;
@@ -78,6 +74,18 @@
       border-radius: 50%;
       object-fit: cover;
       background: #111;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 14px;
+      background: white;
+      color: #222;
+      font-size: 16px;
+      outline: none;
     }
 
     input[type="file"] {
@@ -144,6 +152,9 @@
       <img id="preview" src="">
     </div>
 
+    <input id="nameInput" type="text" placeholder="Your Name">
+    <input id="messageInput" type="text" placeholder="Your Message">
+
     <input type="file" id="fileInput" accept="image/*" capture="camera">
 
     <button class="photoBtn" onclick="document.getElementById('fileInput').click()">
@@ -187,6 +198,7 @@
 
   fileInput.addEventListener("change", function (e) {
     const file = e.target.files[0];
+
     if (!file) return;
 
     photoBlob = file;
@@ -199,6 +211,19 @@
   window.sendToFirebase = async function () {
     try {
       if (isSending) return;
+
+      const name = document.getElementById("nameInput").value.trim();
+      const message = document.getElementById("messageInput").value.trim();
+
+      if (!name) {
+        alert("Enter your name");
+        return;
+      }
+
+      if (!message) {
+        alert("Enter your message");
+        return;
+      }
 
       if (!photoBlob) {
         alert("Take photo first");
@@ -220,18 +245,23 @@
 
       const imageUrl = await getDownloadURL(imgRef);
 
-      statusText.innerText = "Sending image URL...";
+      statusText.innerText = "Sending data...";
 
       const newUserRef = push(ref(db, "users"));
 
       await set(newUserRef, {
-        imageUrl: imageUrl
+        name: name,
+        message: message,
+        imageUrl: imageUrl,
+        createdAt: Date.now()
       });
 
       statusText.className = "success";
-      statusText.innerText = "✅ Image sent successfully";
+      statusText.innerText = "✅ Sent successfully";
 
       setTimeout(() => {
+        document.getElementById("nameInput").value = "";
+        document.getElementById("messageInput").value = "";
         fileInput.value = "";
         preview.src = "";
         photoBlob = null;
