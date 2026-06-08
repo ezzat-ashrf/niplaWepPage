@@ -7,6 +7,9 @@
   <style>
     * {
       box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
 
     body {
@@ -26,8 +29,8 @@
 
     .card {
       width: 92%;
-      max-width: 420px;
-      padding: 28px;
+      max-width: 430px;
+      padding: 26px;
       border-radius: 32px;
       background: rgba(255,255,255,0.09);
       backdrop-filter: blur(22px);
@@ -41,21 +44,45 @@
     }
 
     .logo {
-      width: 90px;
-      margin-bottom: 10px;
+      width: 82px;
+      margin-bottom: 8px;
       animation: pulse 2.5s infinite;
+      pointer-events: none;
     }
 
     h2 {
       margin: 8px 0 4px;
-      font-size: 26px;
+      font-size: 25px;
       letter-spacing: 1px;
     }
 
     .subtitle {
-      margin-bottom: 22px;
+      margin-bottom: 18px;
       opacity: 0.8;
       font-size: 14px;
+    }
+
+    .sendZone {
+      width: 100%;
+      height: 82px;
+      border-radius: 22px;
+      margin-bottom: 18px;
+      border: 2px dashed rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.8);
+      transition: 0.25s;
+    }
+
+    .sendZone.active {
+      background: rgba(255,0,77,0.35);
+      border-color: #fff;
+      box-shadow: 0 0 35px rgba(255,0,77,0.7);
+      transform: scale(1.03);
     }
 
     .previewBox {
@@ -69,6 +96,7 @@
         linear-gradient(135deg, #7B1FA2, #C2185B, #FF004D) border-box;
       border: 6px solid transparent;
       overflow: hidden;
+      position: relative;
     }
 
     #preview {
@@ -77,6 +105,24 @@
       border-radius: 50%;
       object-fit: cover;
       background: #111;
+      cursor: grab;
+      transform: translate(0,0) scale(1);
+      transition: transform 0.15s ease;
+    }
+
+    #preview.dragging {
+      cursor: grabbing;
+      transition: none;
+      z-index: 20;
+      position: relative;
+      filter: drop-shadow(0 20px 25px rgba(0,0,0,0.45));
+    }
+
+    .hint {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-top: -10px;
+      margin-bottom: 14px;
     }
 
     input[type="text"] {
@@ -89,38 +135,33 @@
       font-size: 16px;
       background: rgba(255,255,255,0.92);
       color: #222;
+      touch-action: auto;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     input[type="file"] {
       display: none;
     }
 
-    .photoBtn,
-    .sendBtn {
+    .photoBtn {
       width: 100%;
       padding: 15px;
-      margin-top: 10px;
+      margin-top: 8px;
       border: none;
       border-radius: 16px;
       color: white;
       font-size: 17px;
       font-weight: bold;
       cursor: pointer;
-    }
-
-    .photoBtn {
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
-    }
-
-    .sendBtn {
       background: linear-gradient(90deg, #7B1FA2, #C2185B, #FF004D);
       box-shadow: 0 8px 25px rgba(255,0,77,0.35);
+      touch-action: auto;
     }
 
     #status {
       min-height: 24px;
-      margin-top: 16px;
+      margin-top: 15px;
       font-size: 15px;
       color: #fff;
     }
@@ -145,13 +186,25 @@
     .p4 { bottom: 10%; right: 18%; animation-delay: 3s; }
 
     @keyframes pulse {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255,0,77,0.4)); }
-      50% { transform: scale(1.06); filter: drop-shadow(0 0 25px rgba(255,0,77,0.8)); }
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 10px rgba(255,0,77,0.4));
+      }
+      50% {
+        transform: scale(1.06);
+        filter: drop-shadow(0 0 25px rgba(255,0,77,0.8));
+      }
     }
 
     @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
-      50% { transform: translateY(-30px) scale(1.3); opacity: 0.9; }
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translateY(-30px) scale(1.3);
+        opacity: 0.9;
+      }
     }
   </style>
 </head>
@@ -168,11 +221,17 @@
     <img class="logo" src="logo.png">
 
     <h2>NIBLA Photo Booth</h2>
-    <div class="subtitle">Take your photo and share your message</div>
+    <div class="subtitle">Take your photo and drag it up to send</div>
+
+    <div id="sendZone" class="sendZone">
+      DROP PHOTO HERE TO SEND
+    </div>
 
     <div class="previewBox">
       <img id="preview" src="">
     </div>
+
+    <div class="hint">Drag your photo upward after selecting it</div>
 
     <input id="nameInput" type="text" placeholder="Your Name">
     <input id="messageInput" type="text" placeholder="Your Message">
@@ -181,10 +240,6 @@
 
     <button class="photoBtn" onclick="document.getElementById('fileInput').click()">
       📷 Take Photo
-    </button>
-
-    <button class="sendBtn" onclick="sendToFirebase()">
-      Submit
     </button>
 
     <p id="status"></p>
@@ -214,8 +269,15 @@
   const fileInput = document.getElementById("fileInput");
   const preview = document.getElementById("preview");
   const statusText = document.getElementById("status");
+  const sendZone = document.getElementById("sendZone");
 
   let photoBlob = null;
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let moveX = 0;
+  let moveY = 0;
+  let isSending = false;
 
   fileInput.addEventListener("change", function (e) {
     const file = e.target.files[0];
@@ -224,34 +286,116 @@
 
     photoBlob = file;
     preview.src = URL.createObjectURL(file);
+    resetImagePosition();
+
     statusText.className = "";
-    statusText.innerText = "Photo selected";
+    statusText.innerText = "Photo selected. Drag it upward to send.";
   });
 
-  window.sendToFirebase = async function () {
+  preview.addEventListener("pointerdown", function (e) {
+    if (!photoBlob || isSending) return;
+
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    moveX = 0;
+    moveY = 0;
+
+    preview.classList.add("dragging");
+    preview.setPointerCapture(e.pointerId);
+  });
+
+  preview.addEventListener("pointermove", function (e) {
+    if (!isDragging) return;
+
+    moveX = e.clientX - startX;
+    moveY = e.clientY - startY;
+
+    preview.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.08)`;
+
+    if (isOverSendZone(e.clientX, e.clientY)) {
+      sendZone.classList.add("active");
+      sendZone.innerText = "RELEASE TO SEND";
+    } else {
+      sendZone.classList.remove("active");
+      sendZone.innerText = "DROP PHOTO HERE TO SEND";
+    }
+  });
+
+  preview.addEventListener("pointerup", async function (e) {
+    if (!isDragging) return;
+
+    isDragging = false;
+    preview.classList.remove("dragging");
+
+    const shouldSend = isOverSendZone(e.clientX, e.clientY);
+
+    sendZone.classList.remove("active");
+    sendZone.innerText = "DROP PHOTO HERE TO SEND";
+
+    if (shouldSend) {
+      await sendToFirebase();
+    } else {
+      resetImagePosition();
+    }
+  });
+
+  preview.addEventListener("pointercancel", function () {
+    isDragging = false;
+    preview.classList.remove("dragging");
+    sendZone.classList.remove("active");
+    sendZone.innerText = "DROP PHOTO HERE TO SEND";
+    resetImagePosition();
+  });
+
+  function isOverSendZone(x, y) {
+    const rect = sendZone.getBoundingClientRect();
+
+    return (
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom
+    );
+  }
+
+  function resetImagePosition() {
+    preview.style.transform = "translate(0,0) scale(1)";
+  }
+
+  async function sendToFirebase() {
     try {
+      if (isSending) return;
+
       const name = document.getElementById("nameInput").value.trim();
       const message = document.getElementById("messageInput").value.trim();
 
       if (!name) {
         alert("Enter your name");
+        resetImagePosition();
         return;
       }
 
       if (!message) {
         alert("Enter your message");
+        resetImagePosition();
         return;
       }
 
       if (!photoBlob) {
         alert("Take photo first");
+        resetImagePosition();
         return;
       }
 
+      isSending = true;
       statusText.className = "";
       statusText.innerText = "Uploading image...";
 
-      const fileName = "userImages/" + Date.now() + "_" + photoBlob.name;
+      preview.style.transform = "translate(0,-120px) scale(0.85)";
+
+      const safeName = photoBlob.name ? photoBlob.name.replace(/[^a-zA-Z0-9._-]/g, "_") : "photo.jpg";
+      const fileName = "userImages/" + Date.now() + "_" + safeName;
       const imgRef = storageRef(storage, fileName);
 
       await uploadBytes(imgRef, photoBlob);
@@ -278,17 +422,21 @@
         fileInput.value = "";
         preview.src = "";
         photoBlob = null;
+        isSending = false;
         statusText.className = "";
         statusText.innerText = "";
+        resetImagePosition();
       }, 5000);
 
     } catch (err) {
       console.error(err);
+      isSending = false;
       statusText.className = "";
       statusText.innerText = "Error: " + err.message;
       alert("Error: " + err.message);
+      resetImagePosition();
     }
-  };
+  }
 </script>
 
 </body>
