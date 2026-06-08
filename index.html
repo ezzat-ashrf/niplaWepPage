@@ -1,69 +1,195 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Firebase Photo Test</title>
+  <title>NIBLA Photo Booth</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: #111;
+      background:
+        radial-gradient(circle at top left, rgba(255,0,77,0.35), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(123,31,162,0.45), transparent 40%),
+        linear-gradient(135deg, #1A0B2E, #4B1D7A, #8C145E, #E0004D);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       color: white;
+      overflow: hidden;
+    }
+
+    .card {
+      width: 92%;
+      max-width: 420px;
+      padding: 28px;
+      border-radius: 32px;
+      background: rgba(255,255,255,0.09);
+      backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 0 60px rgba(224,0,77,0.35),
+        0 0 120px rgba(123,31,162,0.25);
       text-align: center;
-      padding: 20px;
+      position: relative;
+      z-index: 2;
     }
 
-    input, button {
-      width: 90%;
-      max-width: 330px;
-      padding: 12px;
-      margin: 8px;
-      font-size: 16px;
-      border-radius: 8px;
+    .logo {
+      width: 90px;
+      margin-bottom: 10px;
+      animation: pulse 2.5s infinite;
+    }
+
+    h2 {
+      margin: 8px 0 4px;
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      margin-bottom: 22px;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+
+    .previewBox {
+      width: 230px;
+      height: 230px;
+      margin: 0 auto 22px;
+      border-radius: 50%;
+      padding: 6px;
+      background:
+        linear-gradient(#111, #111) padding-box,
+        linear-gradient(135deg, #7B1FA2, #C2185B, #FF004D) border-box;
+      border: 6px solid transparent;
+      overflow: hidden;
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #111;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 14px;
       border: none;
+      outline: none;
+      font-size: 16px;
+      background: rgba(255,255,255,0.92);
+      color: #222;
     }
 
-    button {
-      background: #00c853;
+    input[type="file"] {
+      display: none;
+    }
+
+    .photoBtn,
+    .sendBtn {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 16px;
       color: white;
+      font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    img {
-      width: 90%;
-      max-width: 360px;
-      border-radius: 12px;
-      margin-top: 10px;
-      background: #000;
+    .photoBtn {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .sendBtn {
+      background: linear-gradient(90deg, #7B1FA2, #C2185B, #FF004D);
+      box-shadow: 0 8px 25px rgba(255,0,77,0.35);
     }
 
     #status {
-      margin-top: 15px;
-      color: #00e676;
+      min-height: 24px;
+      margin-top: 16px;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    .success {
+      color: #00ff99 !important;
+      font-weight: bold;
+    }
+
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      animation: float 8s infinite ease-in-out;
+    }
+
+    .p1 { top: 12%; left: 10%; animation-delay: 0s; }
+    .p2 { top: 70%; left: 15%; animation-delay: 1s; }
+    .p3 { top: 20%; right: 12%; animation-delay: 2s; }
+    .p4 { bottom: 10%; right: 18%; animation-delay: 3s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255,0,77,0.4)); }
+      50% { transform: scale(1.06); filter: drop-shadow(0 0 25px rgba(255,0,77,0.8)); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+      50% { transform: translateY(-30px) scale(1.3); opacity: 0.9; }
     }
   </style>
 </head>
 
 <body>
 
-  <h2>Take Photo & Send</h2>
+  <div class="particle p1"></div>
+  <div class="particle p2"></div>
+  <div class="particle p3"></div>
+  <div class="particle p4"></div>
 
-  <input id="nameInput" type="text" placeholder="Name">
-  <input id="messageInput" type="text" placeholder="Message">
+  <div class="card">
 
-  <br>
+    <img class="logo" src="logo.png">
 
-  <input type="file" id="fileInput" accept="image/*" capture="camera">
+    <h2>NIBLA Photo Booth</h2>
+    <div class="subtitle">Take your photo and share your message</div>
 
-  <br>
+    <div class="previewBox">
+      <img id="preview" src="">
+    </div>
 
-  <img id="preview">
+    <input id="nameInput" type="text" placeholder="Your Name">
+    <input id="messageInput" type="text" placeholder="Your Message">
 
-  <br>
+    <input type="file" id="fileInput" accept="image/*" capture="camera">
 
-  <button onclick="sendToFirebase()">Send</button>
+    <button class="photoBtn" onclick="document.getElementById('fileInput').click()">
+      📷 Take Photo
+    </button>
 
-  <p id="status"></p>
+    <button class="sendBtn" onclick="sendToFirebase()">
+      Submit
+    </button>
+
+    <p id="status"></p>
+
+  </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -98,6 +224,7 @@
 
     photoBlob = file;
     preview.src = URL.createObjectURL(file);
+    statusText.className = "";
     statusText.innerText = "Photo selected";
   });
 
@@ -107,20 +234,21 @@
       const message = document.getElementById("messageInput").value.trim();
 
       if (!name) {
-        alert("Enter name");
+        alert("Enter your name");
         return;
       }
 
       if (!message) {
-        alert("Enter message");
+        alert("Enter your message");
         return;
       }
 
       if (!photoBlob) {
-        alert("Take or select photo first");
+        alert("Take photo first");
         return;
       }
 
+      statusText.className = "";
       statusText.innerText = "Uploading image...";
 
       const fileName = "userImages/" + Date.now() + "_" + photoBlob.name;
@@ -141,18 +269,22 @@
         createdAt: Date.now()
       });
 
-      statusText.innerText = "Sent successfully";
+      statusText.className = "success";
+      statusText.innerText = "✅ Thank you! Sent successfully";
 
-      alert("Sent successfully!");
-
-      document.getElementById("nameInput").value = "";
-      document.getElementById("messageInput").value = "";
-      fileInput.value = "";
-      preview.src = "";
-      photoBlob = null;
+      setTimeout(() => {
+        document.getElementById("nameInput").value = "";
+        document.getElementById("messageInput").value = "";
+        fileInput.value = "";
+        preview.src = "";
+        photoBlob = null;
+        statusText.className = "";
+        statusText.innerText = "";
+      }, 5000);
 
     } catch (err) {
       console.error(err);
+      statusText.className = "";
       statusText.innerText = "Error: " + err.message;
       alert("Error: " + err.message);
     }
